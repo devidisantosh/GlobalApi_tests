@@ -1,12 +1,15 @@
+package Tests;
+
 import com.global.restassured.GraphQLQuery;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import static io.restassured.RestAssured.given;
 
 import net.minidev.json.JSONObject;
-import org.junit.Assert;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 
 public class GlobalTest {
@@ -18,26 +21,30 @@ public class GlobalTest {
          checkAssertions(response);
     }
 
-    @Test
-    public void updateLimitAndReturnNumberOfLaunches(){
+
+    @ParameterizedTest
+    @ValueSource(ints = {2,5,10})
+    public void updateLimitAndReturnNumberOfLaunches(int limit){
         GraphQLQuery query = new GraphQLQuery();
         query.setQuery("query getLaunches($limit: Int!){ launches (limit: $limit) { id mission_name ships { id} rocket { first_stage {cores { flight }} second_stage {block } } } }");
 
         JSONObject variables = new JSONObject();
-        variables.put("limit", 2);
+        variables.put("limit", limit);
         query.setVariables(variables.toString());
 
         Response response = getResponse(query);
         checkAssertions(response);
     }
 
-    @Test
-    public void updateOffsetAndReturnNumberOfLaunches(){
+
+    @ParameterizedTest
+    @ValueSource(ints = {5,10,15})
+    public void updateOffsetAndReturnNumberOfLaunches(int offset){
         GraphQLQuery query = new GraphQLQuery();
         query.setQuery("query getLaunches($offset: Int!){ launches (offset: $offset) { id mission_name ships { id} rocket { first_stage {cores { flight }} second_stage {block } } } }\n");
 
         JSONObject variables = new JSONObject();
-        variables.put("offset", 2);
+        variables.put("offset", offset);
         query.setVariables(variables.toString());
 
         Response response = getResponse(query);
@@ -45,11 +52,11 @@ public class GlobalTest {
 
     }
     public void checkAssertions(Response response){
-        Assert.assertEquals(200, response.statusCode());
-        Assert.assertTrue(response.jsonPath().getList("data.launches.mission_name").size()>0);
-        Assert.assertTrue(response.jsonPath().getList("data.launches.ships").size()>0);
-        Assert.assertTrue(response.path("data.launches.rocket.first_stage")!=null);
-        Assert.assertTrue(response.path("data.launches.rocket.second_stage")!=null);
+        Assertions.assertEquals(200, response.statusCode());
+        Assertions.assertTrue(response.jsonPath().getList("data.launches.mission_name").size()>0);
+        Assertions.assertTrue(response.jsonPath().getList("data.launches.ships").size()>0);
+        Assertions.assertTrue(response.path("data.launches.rocket.first_stage")!=null);
+        Assertions.assertTrue(response.path("data.launches.rocket.second_stage")!=null);
     }
 
     public Response getResponse( GraphQLQuery query){
